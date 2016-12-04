@@ -2,11 +2,33 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
   <link rel="stylesheet" type="text/css" href="style.css" >
-  <title>Hey, I'm here</title>
-</head>
+  <title>AlejandroReBa's home</title>
+  
+  <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
+  <script type='text/javascript'>
+  function init()
+  {
+    var map = L.map ("map1");
 
-<body>
+    var attrib="Map data copyright OpenStreetMap contributors, Open Database Licence";
+
+    L.tileLayer
+        ("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            { attribution: attrib } ).addTo(map);
+            
+    var pos = new L.LatLng(50.908,-1.4);
+    map.setView(pos, 14);
+
+    L.marker([50.908, -1.4]).addTo(map)
+    .bindPopup('This year I am studying at Southampton!')
+    .openPopup();
+  }
+  </script>
+</head>
+  
+<body onload="init()">
 
 <!-- Menú de navegación del sitio -->
 <ul class="navbar">
@@ -34,5 +56,6 @@ Dentro de mi ámbito estoy muy interesado en la seguridad y la tecnología web, 
 <br />
 La gente me conoce como una persona amable y políticamente correcta en las situaciones que uno tiene que serlo. Me agrada trabajar solo en muchas ocasiones, y tomar parte del liderazgo a la hora de trabajar en proyectos. Siempre intento ayudar al crecimiento personal y profesional de mis compañeros, motivándolos y dando opiniones constructivas en base a mi experiencia. Pienso que la motivación es algo esencial sin importar cual sea el contexto.
 
-</body>
+<div id="map1" style="width:800px; height:600px"> </div>  
+  </body>
 </html>
