@@ -409,22 +409,23 @@ function writeTitle(e){
 <body onload='init()'>
 <!-- body onload=init(): run the "init()" function when the page
      first loads. -->
-<canvas id='canvas1' width='700' height='500'></canvas> <br />
-<canvas id='canvas2' width='700' height='30'></canvas> <br />
-<canvas id='canvas3' width='700' height='50'></canvas> <br />
-<canvas id='canvas4' width='200' height='30'></canvas>
-<span id="paintBrushId">
-<input type="range" id="widthBrush" min=0 max=30 value=3 step=1 onclick="changeWidthBrush()" oninput="widthBrushOutput.value = widthBrush.value"/>
-<output id="widthBrushOutput">3</output>
-</span> <br/> <br/>
-Title: <input type="text" id="titleCanvas" value=""/> 
-<input type="button" onclick="writeTitle()" value="Add a tittle!"/>
-<input type="button" onclick="clearCanvas()" value="Clear Canvas!"/> <br /> <br />
-Name of the document: <input type="text" id="title" value=""/> 
-<input type="button" onclick="dataURLTest()" value="Click to save!"/> <br /> <br />
-<a href="" id="download" download=""> </a>
-<input type="button" id="sendButton" onclick="ajaxsave()" value="Click to send!"/> <br/>
+	<h1>Paint your own canvas in a quick and easy way! </h1>
+	<canvas id='canvas1' width='700' height='500'></canvas> <br />
+	<canvas id='canvas2' width='700' height='30'></canvas> <br />
+	<canvas id='canvas3' width='700' height='50'></canvas> <br />
+	<canvas id='canvas4' width='200' height='30'></canvas>
+	<span id="paintBrushId">
+	<input type="range" id="widthBrush" min=0 max=30 value=3 step=1 onclick="changeWidthBrush()" oninput="widthBrushOutput.value = widthBrush.value"/>
+	<output id="widthBrushOutput">3</output>
+	</span> <br/> <br/>
+	Title: <input type="text" id="titleCanvas" value=""/> 
+	<input type="button" onclick="writeTitle()" value="Add a tittle!"/>
+	<input type="button" onclick="clearCanvas()" value="Clear Canvas!"/> <br /> <br />
+	Name of the document: <input type="text" id="title" value=""/> 
+	<input type="button" onclick="dataURLTest()" value="Click to save!"/> <br /> <br />
+	<a href="" id="download" download=""> </a>
+	<input type="button" id="sendButton" onclick="ajaxsave()" value="Click to send!"/> <br/>
 
-<img src="" id="img1" width='700' height='500'/>
+	<img src="" id="img1" width='700' height='500'/>
 </body>
 </html>
