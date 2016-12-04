@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Canvas Example</title>
+
+<style>
+#paintBrushId {
+    background-color: #fff0c0;
+}
+
+input[type='range'] {
+	height:30px;
+    width:470px;
+}
+
+#widthBrushOutput{
+	width:15px;
+}
+
+</style>
+<script type="text/javascript" src="https://edward2.solent.ac.uk/ewt/jquery.min.js">
+</script>
+<script type="text/javascript">
+var styles = ['red','green','blue','yellow','magenta','cyan','black', 'white'];
+var index;
+var lastText;
+var text;
+
+var totalColorWidth;
+var totalColorHeight;
+var colorsCount;
+var distance;
+
+var totalShapeWidth;
+var totalShapeHeight;
+var shapesCount;
+var distanceShape;
+var shapeSelected;
+var filledSelected;
+
+var paintBrush;
+var mouse = {x: 0, y: 0};
+var lineWidth;
+var lineJoin;
+var lineCap;
+
+function init(){
+	var canvas = document.getElementById("canvas1");
+	var ctx = canvas.getContext('2d');
+	
+	//now background color will be save with toDataURL
+	ctx.fillStyle = '#fff0c0';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+    canvas.addEventListener ("mouseup", draw);
+	index = 0;
+	lastText = "";
+	text = "";
+	
+	$('#sendButton').prop('disabled', true);
+	
+	shapeSelected = "circle";
+	filledSelected = false;
+	paintBrush = false;
+	lineWidth = 3;
+	lineJoin= 'round'; //bevel, round, miter
+	lineCap = 'round'; //round, square, butt
+	ctx.lineWidth = lineWidth;
+	ctx.lineJoin = lineJoin;
+	ctx.lineCap = lineCap;
+
+	
+	
+	//color selectors
+	var canvas2 = document.getElementById("canvas2");
+	canvas2.style.backgroundColor = '#fff0c0';
+	canvas2.addEventListener ("mouseup", changeColor);
+	
+	totalColorWidth = 400;
+	totalColorHeight = 20;
+	colorsCount = 8;
+	distance = totalColorWidth/colorsCount;
+	
+	
+	var ctx2 = canvas2.getContext('2d');
+	ctx2.fillStyle = '#ff0000';
+	ctx2.fillRect(0,5, distance, totalColorHeight);
+	ctx2.fillStyle = '#00ff00';
+	ctx2.fillRect(distance, 5, distance, totalColorHeight);
+	ctx2.fillStyle = '#0000ff';
+	ctx2.fillRect(2*distance, 5, distance, totalColorHeight);
+	ctx2.fillStyle = '#ffff00';
+	ctx2.fillRect(3*distance, 5, distance, totalColorHeight);
+	ctx2.fillStyle = '#ff00ff';
+	ctx2.fillRect(4*distance, 5, distance, totalColorHeight);
+	ctx2.fillStyle = '#00ffff';
+	ctx2.fillRect(5*distance, 5, distance, totalColorHeight);
+	ctx2.fillStyle = '#000000';
+	ctx2.fillRect(6*distance, 5, distance, totalColorHeight);
+	ctx2.fillStyle = '#ffffff';
+	ctx2.fillRect(7*distance, 5, distance, totalColorHeight);
+	
+	
+	//geometric shapes selector
+	var canvas3 = document.getElementById("canvas3");
+	canvas3.style.backgroundColor = '#fff0c0';
+	canvas3.addEventListener ("mouseup", changeShape);
+	
+	totalShapeWidth = 400;
+	totalShapeHeight = 40;
+	shapesCount = 4;
+	distanceShape = totalShapeWidth/shapesCount;
+	
+	var ctx3 = canvas3.getContext('2d');
+	ctx3.strokeStyle = 'black';
+	//triangle
+    ctx3.beginPath();
+	ctx3.moveTo(0,5);
+	ctx3.lineTo(distanceShape, 5);
+	ctx3.lineTo(distanceShape/2, totalShapeHeight);
+	ctx3.closePath();
+    ctx3.stroke();
+	
+	//filled triangle
+	ctx3.fillStyle = 'black';
+    ctx3.beginPath();
+	ctx3.moveTo(distanceShape+10,5);
+	ctx3.lineTo(2*distanceShape+10, 5);
+	ctx3.lineTo(3/2*distanceShape+10, totalShapeHeight);
+	ctx3.closePath();
+    ctx3.fill();
+	
+	//squares
+	ctx3.strokeRect(2*distanceShape+20,5,totalShapeHeight,totalShapeHeight);
+	ctx3.fillRect(2*distanceShape+totalShapeHeight+30,5,totalShapeHeight,totalShapeHeight);
+	
+	//rectangles
+	ctx3.strokeRect(2*distanceShape+2*totalShapeHeight+40,5,distanceShape,totalShapeHeight)
+	ctx3.fillRect(3*distanceShape+2*totalShapeHeight+50,5,distanceShape,totalShapeHeight)
+	
+	//circles
+	ctx3.beginPath();
+	ctx3.strokeStyle = 'black';
+	ctx3.arc(4*distanceShape+5/2*totalShapeHeight+60, 5+totalShapeHeight/2, totalShapeHeight/2, 0, Math.PI*2, false);
+    ctx3.stroke();
+	
+	ctx3.beginPath();
+	ctx3.fillStyle = 'black';
+	ctx3.arc(4*distanceShape+7/2*totalShapeHeight+70, 5+totalShapeHeight/2, totalShapeHeight/2, 0, Math.PI*2, false);
+    ctx3.fill();
+	
+	
+	//paintbrush
+	var canvas4 = document.getElementById("canvas4");
+	var ctx4 = canvas4.getContext('2d');
+	canvas4.style.backgroundColor = '#fff0c0';
+	canvas4.addEventListener ("mouseup", activePaintBrush);
+	
+	ctx4.beginPath();
+	ctx4.fillStyle = 'black';
+	ctx4.moveTo(0,5),
+	ctx4.lineTo(40,7);
+	ctx4.lineTo(80,30);
+	ctx4.lineTo(90,1);
+	ctx4.lineTo(95,25);
+	ctx4.lineTo(135,1);
+	ctx4.lineTo(145,15);
+	ctx4.lineTo(155,2);
+	ctx4.lineTo(180,30);
+	ctx4.lineTo(200,5);
+	ctx4.stroke();
+	
+	
+	
+}
+
+function clearCanvas(){
+	var canvas = document.getElementById('canvas1');
+	var ctx = canvas.getContext('2d')
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.fillStyle = '#fff0c0';
+	ctx.fillRect(0, 0, canvas.width, canvas.height)
+	index = 0;
+	lastText = "";
+	text = "";
+}
+	
+function draw(e)
+{
+    var canvas = document.getElementById('canvas1');
+	var jqcanvas = $('#canvas1');
+    var ctx = canvas.getContext('2d');
+    ctx.beginPath();
+	
+	var localX = e.pageX - jqcanvas.offset().left;
+    var localY = e.pageY - jqcanvas.offset().top;
+	
+	if (filledSelected == true){ //for triangles and circles
+		ctx.fillStyle = styles[index];
+	}else{
+		ctx.strokeStyle = styles[index];
+	}
+	
+	if (shapeSelected == "circle"){
+    ctx.arc(localX, localY, 20, 0, Math.PI*2, false);
+	}else if(shapeSelected == "rectangle"){
+		if(filledSelected == true){
+			ctx.fillRect(localX, localY, 75, 25);
+		}else{
+			ctx.strokeRect(localX, localY, 75, 25);
+		}
+	}else if(shapeSelected == "square"){
+		if(filledSelected == true){
+			ctx.fillRect(localX, localY, 25, 25);
+		}else{
+			ctx.strokeRect(localX, localY, 25, 25);
+		}
+	}else if(shapeSelected == "triangle"){
+	ctx.moveTo(localX,localY);
+	ctx.lineTo(localX+25, localY);
+	ctx.lineTo(localX+25/2, localY+25);
+	ctx.closePath();
+	}
+	
+	if (filledSelected == true){ //for triangles and circles
+		ctx.fill();
+	}else{
+		ctx.stroke();
+	}
+	
+	
+	
+}
+
+function changeColor(e){
+    var jqcanvas = $('#canvas2');
+	var localX = e.pageX - jqcanvas.offset().left;
+	if(localX <(colorsCount-7) * distance){
+	index = 0;
+	}else if (localX <(colorsCount-6) * distance){
+	index = 1;
+	}else if (localX <(colorsCount-5) * distance){
+	index = 2;
+	}else if (localX <(colorsCount-4) * distance){
+	index = 3;
+	}else if (localX <(colorsCount-3) * distance){
+	index = 4;
+	}else if (localX <(colorsCount-2) * distance){
+	index = 5;
+	}else if (localX <(colorsCount-1) * distance){
+	index = 6;
+	}else if (localX <colorsCount * distance){
+	index = 7;
+	}
+}
+
+function changeShape(e){
+	if (paintBrush == true){
+		disableBrushListeners();
+	}
+
+    var jqcanvas = $('#canvas3');
+	var localX = e.pageX - jqcanvas.offset().left;
+	if(localX < distanceShape+10){
+	shapeSelected = "triangle";
+	filledSelected = false;
+	}else if (localX < 2*distanceShape+20){
+	shapeSelected = "triangle";
+	filledSelected = true;
+	}else if (localX < 2*distanceShape+totalShapeHeight+30){
+	shapeSelected = "square";
+	filledSelected = false;
+	}else if (localX < 2*distanceShape+2*totalShapeHeight+40){
+	shapeSelected = "square";
+	filledSelected = true;
+	}else if (localX < 3*distanceShape+2*totalShapeHeight+40){
+	shapeSelected = "rectangle";
+	filledSelected = false;
+	}else if (localX < 4*distanceShape+5/2*totalShapeHeight+40){
+	shapeSelected = "rectangle";
+	filledSelected = true;
+	}else if (localX < 4*distanceShape+7/2*totalShapeHeight+55){
+	shapeSelected = "circle";
+	filledSelected = false;
+	}else if (localX < 4*distanceShape+9/2*totalShapeHeight+70){
+	shapeSelected = "circle";
+	filledSelected = true;
+	}
+}
+
+
+function activePaintBrush(e){
+	if(paintBrush == false){
+		enableBrushListeners();
+	}
+}
+
+function enableBrushListeners(){
+	paintBrush = true;
+	var canvas = document.getElementById('canvas1');
+	var ctx = canvas.getContext('2d');
+	canvas.removeEventListener('mouseup', draw);
+	canvas.addEventListener('mousemove', originMouse);
+	canvas.addEventListener('mousedown', startDrawingWithBrush);
+	canvas.addEventListener('mouseup', stopDrawingWithBrush);
+}
+
+function disableBrushListeners(){
+	paintBrush = false;
+	var canvas = document.getElementById('canvas1');
+	var ctx = canvas.getContext('2d');
+	canvas.addEventListener('mouseup', draw);
+	canvas.removeEventListener('mousemove', originMouse);
+	canvas.removeEventListener('mousedown', startDrawingWithBrush);
+	canvas.removeEventListener('mouseup', stopDrawingWithBrush);
+}
+
+function originMouse(e){
+	var canvas = document.getElementById('canvas1');
+	mouse.x = e.pageX - canvas.offsetLeft;
+	mouse.y = e.pageY - canvas.offsetTop;
+}
+
+function startDrawingWithBrush(e){
+	var canvas = document.getElementById('canvas1');
+	var ctx = canvas.getContext('2d');
+	ctx.beginPath();
+    ctx.moveTo(mouse.x, mouse.y);
+ 
+    canvas.addEventListener('mousemove', onPaint);
+}
+
+function stopDrawingWithBrush(e){
+	var canvas = document.getElementById('canvas1');
+    canvas.removeEventListener('mousemove', onPaint);
+}
+
+function onPaint (e){
+	var canvas = document.getElementById('canvas1');
+	var ctx = canvas.getContext('2d');
+	ctx.strokeStyle = styles[index];
+    ctx.lineTo(mouse.x, mouse.y);
+    ctx.stroke();
+};
+
+function changeWidthBrush (e){
+	 lineWidth = document.getElementById("widthBrush").value;
+	 var canvas = document.getElementById("canvas1");
+	 var ctx = canvas.getContext('2d');
+	 ctx.lineWidth = lineWidth;
+}
+
+function dataURLTest()
+{
+    var canvas = document.getElementById("canvas1");
+	var title = document.getElementById('title').value;
+    var dataURL = canvas.toDataURL();
+    document.getElementById("img1").src = dataURL;
+	anchor = document.getElementById("download");
+	anchor.href = dataURL;
+	anchor.innerHTML = "Download";
+	anchor.download= title + ".png";
+	
+	$('#sendButton').prop('disabled', false);
+}
+
+
+function ajaxsave()
+{
+/* disabled at the moment
+	var canvas = document.getElementById('canvas1');
+    var data = canvas.toDataURL().replace("data:image/png;base64,", "");
+	var title = document.getElementById('title').value;
+    var xhr2 = new XMLHttpRequest();
+    xhr2.addEventListener("load", responseReceived);
+    var formData = new FormData();
+    xhr2.open("POST", "serversave.php");
+    formData.append("title", title);
+	formData.append("imgdata", data);
+    xhr2.send(formData);
+*/
+	
+}
+
+function responseReceived(e)
+{
+    alert("Image data sent to server.");
+}
+
+function writeTitle(e){
+	var canvas = document.getElementById('canvas1');
+	var ctx = canvas.getContext('2d')
+	ctx.font='18pt Helvetica';
+	text = document.getElementById("titleCanvas").value;
+
+	//"delete" the old title
+	ctx.fillStyle='#fff0c0';
+	ctx.fillText(lastText, 50, 50);
+	ctx.fillText(lastText, 50, 50);
+	ctx.fillText(lastText, 50, 50);
+	lastText = text;
+	//new title
+	ctx.fillStyle='#000000';
+	ctx.fillText(text,50,50);
+}
+
+</script>
+
+</head>
+<body onload='init()'>
+<!-- body onload=init(): run the "init()" function when the page
+     first loads. -->
+<canvas id='canvas1' width='700' height='500'></canvas> <br />
+<canvas id='canvas2' width='700' height='30'></canvas> <br />
+<canvas id='canvas3' width='700' height='50'></canvas> <br />
+<canvas id='canvas4' width='200' height='30'></canvas>
+<span id="paintBrushId">
+<input type="range" id="widthBrush" min=0 max=30 value=3 step=1 onclick="changeWidthBrush()" oninput="widthBrushOutput.value = widthBrush.value"/>
+<output id="widthBrushOutput">3</output>
+</span> <br/> <br/>
+Title: <input type="text" id="titleCanvas" value=""/> 
+<input type="button" onclick="writeTitle()" value="Add a tittle!"/>
+<input type="button" onclick="clearCanvas()" value="Clear Canvas!"/> <br /> <br />
+Name of the document: <input type="text" id="title" value=""/> 
+<input type="button" onclick="dataURLTest()" value="Click to save!"/> <br /> <br />
+<a href="" id="download" download=""> </a>
+<input type="button" id="sendButton" onclick="ajaxsave()" value="Click to send!"/> <br/>
+
+<img src="" id="img1" width='700' height='500'/>
+</body>
+</html>
